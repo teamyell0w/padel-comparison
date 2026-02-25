@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-pp-charcoal: #2d2d2d;
+  --color-pp-dark: #1a1a1a;
+  --color-pp-blue: #0071EA;
+  --color-pp-blue-light: #3391f0;
+  --color-pp-gray-50: #f9fafb;
+  --color-pp-gray-100: #f3f4f6;
+  --color-pp-gray-200: #e5e7eb;
+  --color-pp-gray-300: #d1d5db;
+  --color-pp-gray-400: #9ca3af;
+  --color-pp-gray-500: #6b7280;
+  --color-pp-gray-600: #4b5563;
+  --color-pp-gray-700: #374151;
+  --color-pp-gray-800: #1f2937;
+  --color-pp-white: #ffffff;
+  --color-pp-control: #3b82f6;
+  --color-pp-power: #ef4444;
+  --color-pp-allround: #8b5cf6;
+  --color-pp-selected: #0071EA;
+  --font-sans: "Roboto", Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: var(--color-pp-gray-50);
+  color: var(--color-pp-dark);
+  font-family: var(--font-sans);
+}
+
+/* Scrollbar styling for comparison table */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--color-pp-gray-100);
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-pp-gray-300);
+  border-radius: 3px;
+}
