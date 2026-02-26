@@ -1,24 +1,42 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { ComparisonTable } from "@/components/ComparisonTable";
-import { testProducts } from "@/data/products";
+import { getProducts } from "@/lib/products";
+import type { PadelRacket } from "@/lib/types";
 
 function CompareContent() {
   const searchParams = useSearchParams();
   const idsParam = searchParams.get("ids");
   const ids = idsParam ? idsParam.split(",") : [];
 
+  const [allProducts, setAllProducts] = useState<PadelRacket[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProducts()
+      .then(setAllProducts)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center text-pp-gray-400 text-sm">
+        Schläger werden geladen...
+      </div>
+    );
+  }
+
   const rackets = ids
-    .map((id) => testProducts.find((p) => p.id === id))
-    .filter(Boolean) as typeof testProducts;
+    .map((id) => allProducts.find((p) => p.id === id))
+    .filter(Boolean) as PadelRacket[];
 
   if (rackets.length < 2) {
     return (
-      <div className="min-h-screen bg-pp-gray-50">
+      <div className="min-h-screen bg-white">
         <Header backLink={{ href: "/matrix", label: "Zurück zur Matrix" }} />
         <div className="flex flex-col items-center justify-center p-16">
           <p className="text-pp-gray-500 mb-4">
@@ -45,7 +63,7 @@ function CompareContent() {
   };
 
   return (
-    <div className="min-h-screen bg-pp-gray-50">
+    <div className="min-h-screen bg-white">
       <Header backLink={{ href: "/matrix", label: "Zurück zur Matrix" }} />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
@@ -75,7 +93,7 @@ function CompareContent() {
 
 export default function ComparePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-pp-gray-50 flex items-center justify-center">Laden...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-pp-gray-400 text-sm">Laden...</div>}>
       <CompareContent />
     </Suspense>
   );

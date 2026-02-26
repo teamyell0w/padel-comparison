@@ -1,11 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { ShopSidebar } from "@/components/ShopSidebar";
 import { CatalogGrid } from "@/components/CatalogGrid";
+import { getProducts } from "@/lib/products";
 import { testProducts } from "@/data/products";
+import type { PadelRacket } from "@/lib/types";
 
 export default function CatalogPage() {
+  const [products, setProducts] = useState<PadelRacket[]>(testProducts);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProducts()
+      .then(setProducts)
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -32,7 +44,13 @@ export default function CatalogPage() {
         <div className="flex gap-8">
           <ShopSidebar />
           <div className="flex-1 min-w-0">
-            <CatalogGrid products={testProducts} />
+            {loading ? (
+              <div className="py-16 text-center text-pp-gray-400 text-sm">
+                Schläger werden geladen...
+              </div>
+            ) : (
+              <CatalogGrid products={products} />
+            )}
           </div>
         </div>
       </main>

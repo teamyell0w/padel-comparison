@@ -1,25 +1,43 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { ProductMatrix } from "@/components/ProductMatrix";
 import { CompareBar } from "@/components/CompareBar";
-import { testProducts } from "@/data/products";
+import { getProducts } from "@/lib/products";
+import type { PadelRacket } from "@/lib/types";
 
 function MatrixContent() {
   const searchParams = useSearchParams();
   const idsParam = searchParams.get("ids");
   const ids = idsParam ? idsParam.split(",") : [];
 
+  const [allProducts, setAllProducts] = useState<PadelRacket[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProducts()
+      .then(setAllProducts)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center text-pp-gray-400 text-sm">
+        Schläger werden geladen...
+      </div>
+    );
+  }
+
   const products = ids.length > 0
-    ? testProducts.filter((p) => ids.includes(p.id))
-    : testProducts;
+    ? allProducts.filter((p) => ids.includes(p.id))
+    : allProducts;
 
   if (products.length === 0) {
     return (
-      <div className="min-h-screen bg-pp-gray-50">
+      <div className="min-h-screen bg-white">
         <Header backLink={{ href: "/", label: "Zurück zum Katalog" }} />
         <div className="flex flex-col items-center justify-center p-16">
           <p className="text-pp-gray-500 mb-4">
@@ -37,7 +55,7 @@ function MatrixContent() {
   }
 
   return (
-    <div className="min-h-screen bg-pp-gray-50">
+    <div className="min-h-screen bg-white">
       <Header backLink={{ href: "/", label: "Zurück zum Katalog" }} />
 
       <main className="px-4 py-8 pb-24">
@@ -60,7 +78,7 @@ function MatrixContent() {
 
 export default function MatrixPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-pp-gray-50 flex items-center justify-center">Laden...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-pp-gray-400 text-sm">Laden...</div>}>
       <MatrixContent />
     </Suspense>
   );

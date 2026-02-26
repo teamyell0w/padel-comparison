@@ -35,12 +35,16 @@ export function ProductCard({ racket }: { racket: PadelRacket }) {
         {selected ? "✓" : "+"}
       </div>
 
-      {/* Racket image placeholder */}
+      {/* Racket image */}
       <div className="w-14 h-20 bg-pp-gray-100 rounded flex items-center justify-center text-pp-gray-300 text-[10px] overflow-hidden">
-        <svg width="32" height="48" viewBox="0 0 24 36" fill="none">
-          <ellipse cx="12" cy="12" rx="9" ry="12" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
-          <rect x="10" y="24" width="4" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
-        </svg>
+        {racket.imageUrl ? (
+          <img src={racket.imageUrl} alt={racket.title} className="w-full h-full object-contain" />
+        ) : (
+          <svg width="32" height="48" viewBox="0 0 24 36" fill="none">
+            <ellipse cx="12" cy="12" rx="9" ry="12" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
+            <rect x="10" y="24" width="4" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
+          </svg>
+        )}
       </div>
 
       {/* Name */}

@@ -32,10 +32,18 @@ export function CatalogCard({ racket, selected, onToggle }: CatalogCardProps) {
 
       {/* Product image — square, white bg, no radius, no padding (like padel-point.de) */}
       <div className="aspect-square bg-white flex items-center justify-center overflow-hidden">
-        <svg width="64" height="96" viewBox="0 0 24 36" fill="none" className="text-pp-gray-200">
-          <ellipse cx="12" cy="12" rx="9" ry="12" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
-          <rect x="10" y="24" width="4" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
-        </svg>
+        {racket.imageUrl ? (
+          <img
+            src={racket.imageUrl}
+            alt={`${racket.brand} ${racket.title}`}
+            className="w-full h-full object-contain"
+          />
+        ) : (
+          <svg width="64" height="96" viewBox="0 0 24 36" fill="none" className="text-pp-gray-200">
+            <ellipse cx="12" cy="12" rx="9" ry="12" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
+            <rect x="10" y="24" width="4" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
+          </svg>
+        )}
       </div>
 
       {/* Text content — left-aligned, minimal */}

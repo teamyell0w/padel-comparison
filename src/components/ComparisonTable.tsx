@@ -94,12 +94,16 @@ export function ComparisonTable({ rackets, onRemove }: ComparisonTableProps) {
                 ✕
               </button>
 
-              {/* Product image placeholder */}
-              <div className="w-20 h-28 bg-pp-gray-100 rounded flex items-center justify-center mb-3">
-                <svg width="40" height="60" viewBox="0 0 24 36" fill="none" className="text-pp-gray-300">
-                  <ellipse cx="12" cy="12" rx="9" ry="12" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
-                  <rect x="10" y="24" width="4" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
-                </svg>
+              {/* Product image */}
+              <div className="w-20 h-28 bg-pp-gray-100 rounded flex items-center justify-center mb-3 overflow-hidden">
+                {racket.imageUrl ? (
+                  <img src={racket.imageUrl} alt={`${racket.brand} ${racket.title}`} className="w-full h-full object-contain" />
+                ) : (
+                  <svg width="40" height="60" viewBox="0 0 24 36" fill="none" className="text-pp-gray-300">
+                    <ellipse cx="12" cy="12" rx="9" ry="12" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
+                    <rect x="10" y="24" width="4" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.08" />
+                  </svg>
+                )}
               </div>
 
               {/* Brand */}

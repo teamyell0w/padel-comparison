@@ -1,20 +1,92 @@
 /**
- * GraphQL queries for the Shopify Storefront API.
+ * Storefront API Queries fuer padel-point.de
  *
- * NOTE: The metafield namespace and keys below are placeholders.
- * Update them to match the actual metafield definitions in your Shopify store.
- * You can find them in Shopify Admin > Settings > Metafields > Products.
+ * Metafield-Keys sind Platzhalter — muessen an die echten
+ * Metafield-Definitionen im Shopify Admin angepasst werden,
+ * sobald der Token da ist.
  */
 
-export const GET_ALL_PRODUCTS_WITH_METAFIELDS = `
-  query getAllProducts($first: Int!) {
-    products(first: $first, sortKey: TITLE) {
+export const GET_COLLECTION_PRODUCTS = `
+  query getCollectionProducts($handle: String!, $first: Int!, $after: String) {
+    collection(handle: $handle) {
+      title
+      products(first: $first, after: $after) {
+        edges {
+          node {
+            id
+            title
+            handle
+            vendor
+            productType
+            tags
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            images(first: 1) {
+              edges {
+                node {
+                  url
+                  altText
+                  width
+                  height
+                }
+              }
+            }
+            weight: metafield(namespace: "custom", key: "weight") {
+              value
+            }
+            headShape: metafield(namespace: "custom", key: "head_shape") {
+              value
+            }
+            balanceRaw: metafield(namespace: "custom", key: "balance_mm") {
+              value
+            }
+            balance: metafield(namespace: "custom", key: "balance") {
+              value
+            }
+            surfaceMaterial: metafield(namespace: "custom", key: "surface_material") {
+              value
+            }
+            surfaceHardness: metafield(namespace: "custom", key: "surface_hardness") {
+              value
+            }
+            coreMaterial: metafield(namespace: "custom", key: "core_material") {
+              value
+            }
+            coreHardness: metafield(namespace: "custom", key: "core_hardness") {
+              value
+            }
+            playType: metafield(namespace: "custom", key: "play_type") {
+              value
+            }
+            playerLevel: metafield(namespace: "custom", key: "player_level") {
+              value
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_PRODUCTS = `
+  query getAllProducts($first: Int!, $after: String) {
+    products(first: $first, after: $after, sortKey: TITLE) {
       edges {
         node {
           id
           title
           handle
           vendor
+          productType
+          tags
           priceRange {
             minVariantPrice {
               amount
@@ -33,85 +105,39 @@ export const GET_ALL_PRODUCTS_WITH_METAFIELDS = `
           }
           weight: metafield(namespace: "custom", key: "weight") {
             value
-            type
           }
           headShape: metafield(namespace: "custom", key: "head_shape") {
             value
-            type
+          }
+          balanceRaw: metafield(namespace: "custom", key: "balance_mm") {
+            value
           }
           balance: metafield(namespace: "custom", key: "balance") {
             value
-            type
           }
           surfaceMaterial: metafield(namespace: "custom", key: "surface_material") {
             value
-            type
+          }
+          surfaceHardness: metafield(namespace: "custom", key: "surface_hardness") {
+            value
           }
           coreMaterial: metafield(namespace: "custom", key: "core_material") {
             value
-            type
+          }
+          coreHardness: metafield(namespace: "custom", key: "core_hardness") {
+            value
           }
           playType: metafield(namespace: "custom", key: "play_type") {
             value
-            type
+          }
+          playerLevel: metafield(namespace: "custom", key: "player_level") {
+            value
           }
         }
       }
       pageInfo {
         hasNextPage
         endCursor
-      }
-    }
-  }
-`;
-
-export const GET_PRODUCT_BY_HANDLE = `
-  query getProduct($handle: String!) {
-    product(handle: $handle) {
-      id
-      title
-      handle
-      vendor
-      descriptionHtml
-      priceRange {
-        minVariantPrice {
-          amount
-          currencyCode
-        }
-      }
-      images(first: 5) {
-        edges {
-          node {
-            url
-            altText
-            width
-            height
-          }
-        }
-      }
-      weight: metafield(namespace: "custom", key: "weight") {
-        value
-        type
-      }
-      headShape: metafield(namespace: "custom", key: "head_shape") {
-        value
-        type
-      }
-      balance: metafield(namespace: "custom", key: "balance") {
-        value
-        type
-      }
-      surfaceMaterial: metafield(namespace: "custom", key: "surface_material") {
-        value
-        type
-      }
-      coreMaterial: metafield(namespace: "custom", key: "core_material") {
-        value
-        type
-      }
-      playType: metafield(namespace: "custom", key: "play_type") {
-        value
-        type
       }
     }
   }
