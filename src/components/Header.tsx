@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface HeaderProps {
-  backLink?: { href: string; label: string };
+  backLink?: { href?: string; onClick?: () => void; label: string };
 }
 
 const topNavItems = [
@@ -49,12 +49,21 @@ export function Header({ backLink }: HeaderProps) {
         {/* Right icons */}
         <div className="flex items-center gap-5">
           {backLink && (
-            <Link
-              href={backLink.href}
-              className="text-sm text-pp-gray-500 hover:text-pp-charcoal transition-colors flex items-center gap-1"
-            >
-              ← {backLink.label}
-            </Link>
+            backLink.onClick ? (
+              <button
+                onClick={backLink.onClick}
+                className="text-sm text-pp-gray-500 hover:text-pp-charcoal transition-colors flex items-center gap-1"
+              >
+                ← {backLink.label}
+              </button>
+            ) : (
+              <Link
+                href={backLink.href || "/"}
+                className="text-sm text-pp-gray-500 hover:text-pp-charcoal transition-colors flex items-center gap-1"
+              >
+                ← {backLink.label}
+              </Link>
+            )
           )}
           {pathname !== "/" && !backLink && (
             <Link

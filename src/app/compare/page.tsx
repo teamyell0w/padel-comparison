@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
@@ -10,6 +10,7 @@ import type { PadelRacket } from "@/lib/types";
 
 function CompareContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const idsParam = searchParams.get("ids");
   const ids = idsParam ? idsParam.split(",") : [];
 
@@ -37,7 +38,7 @@ function CompareContent() {
   if (rackets.length < 2) {
     return (
       <div className="min-h-screen bg-white">
-        <Header backLink={{ href: "/matrix", label: "Zurück zur Matrix" }} />
+        <Header backLink={{ onClick: () => router.back(), label: "Zurück zur Matrix" }} />
         <div className="flex flex-col items-center justify-center p-16">
           <p className="text-pp-gray-500 mb-4">
             Bitte wähle mindestens 2 Schläger zum Vergleichen aus.
@@ -56,7 +57,7 @@ function CompareContent() {
   const handleRemove = (id: string) => {
     const newIds = ids.filter((i) => i !== id);
     if (newIds.length < 2) {
-      window.location.href = "/matrix";
+      router.back();
     } else {
       window.location.href = `/compare?ids=${newIds.join(",")}`;
     }
@@ -64,7 +65,7 @@ function CompareContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header backLink={{ href: "/matrix", label: "Zurück zur Matrix" }} />
+      <Header backLink={{ onClick: () => router.back(), label: "Zurück zur Matrix" }} />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-xl font-bold text-pp-charcoal mb-1">
@@ -79,12 +80,12 @@ function CompareContent() {
         </div>
 
         <div className="mt-6 text-center">
-          <Link
-            href="/matrix"
+          <button
+            onClick={() => router.back()}
             className="inline-block px-6 py-2.5 bg-pp-blue text-white font-semibold hover:bg-pp-blue-light transition-colors"
           >
             Zurück zur Matrix
-          </Link>
+          </button>
         </div>
       </main>
     </div>
