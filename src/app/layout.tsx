@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { ComparisonProvider } from "@/context/ComparisonContext";
+import { CatalogProvider } from "@/context/CatalogContext";
 import "./globals.css";
 
 const roboto = Roboto({
@@ -22,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body className={`${roboto.variable} font-sans antialiased`}>
-        <ComparisonProvider>
-          {children}
-        </ComparisonProvider>
+        <CatalogProvider>
+          <ComparisonProvider>
+            {children}
+          </ComparisonProvider>
+        </CatalogProvider>
       </body>
     </html>
   );

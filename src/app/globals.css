@@ -23,7 +23,7 @@
 }
 
 body {
-  background: var(--color-pp-gray-50);
+  background: #ffffff;
   color: var(--color-pp-dark);
   font-family: var(--font-sans);
 }

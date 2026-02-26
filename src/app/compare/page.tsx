@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
+import { Header } from "@/components/Header";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { testProducts } from "@/data/products";
 
@@ -17,16 +18,19 @@ function CompareContent() {
 
   if (rackets.length < 2) {
     return (
-      <div className="min-h-screen bg-pp-gray-50 flex flex-col items-center justify-center p-8">
-        <p className="text-pp-gray-500 mb-4">
-          Bitte wähle mindestens 2 Schläger zum Vergleichen aus.
-        </p>
-        <Link
-          href="/"
-          className="px-5 py-2 bg-pp-blue text-white font-semibold hover:bg-pp-blue-light transition-colors"
-        >
-          Zurück zur Matrix
-        </Link>
+      <div className="min-h-screen bg-pp-gray-50">
+        <Header backLink={{ href: "/matrix", label: "Zurück zur Matrix" }} />
+        <div className="flex flex-col items-center justify-center p-16">
+          <p className="text-pp-gray-500 mb-4">
+            Bitte wähle mindestens 2 Schläger zum Vergleichen aus.
+          </p>
+          <Link
+            href="/"
+            className="px-5 py-2 bg-pp-blue text-white font-semibold hover:bg-pp-blue-light transition-colors"
+          >
+            Zum Katalog
+          </Link>
+        </div>
       </div>
     );
   }
@@ -34,7 +38,7 @@ function CompareContent() {
   const handleRemove = (id: string) => {
     const newIds = ids.filter((i) => i !== id);
     if (newIds.length < 2) {
-      window.location.href = "/";
+      window.location.href = "/matrix";
     } else {
       window.location.href = `/compare?ids=${newIds.join(",")}`;
     }
@@ -42,25 +46,8 @@ function CompareContent() {
 
   return (
     <div className="min-h-screen bg-pp-gray-50">
-      {/* Header */}
-      <header className="bg-pp-charcoal text-white">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold tracking-tight">PADEL-POINT</h1>
-            <p className="text-[11px] text-pp-gray-400 uppercase tracking-wider">
-              Schläger Vergleich
-            </p>
-          </div>
-          <Link
-            href="/"
-            className="text-sm text-pp-gray-400 hover:text-white transition-colors flex items-center gap-1"
-          >
-            ← Zurück zur Matrix
-          </Link>
-        </div>
-      </header>
+      <Header backLink={{ href: "/matrix", label: "Zurück zur Matrix" }} />
 
-      {/* Comparison */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-xl font-bold text-pp-charcoal mb-1">
           Vergleich ({rackets.length} Schläger)
@@ -75,7 +62,7 @@ function CompareContent() {
 
         <div className="mt-6 text-center">
           <Link
-            href="/"
+            href="/matrix"
             className="inline-block px-6 py-2.5 bg-pp-blue text-white font-semibold hover:bg-pp-blue-light transition-colors"
           >
             Zurück zur Matrix
