@@ -1,9 +1,8 @@
 /**
  * Storefront API Queries fuer padel-point.de
  *
- * Metafield-Keys sind Platzhalter — muessen an die echten
- * Metafield-Definitionen im Shopify Admin angepasst werden,
- * sobald der Token da ist.
+ * Metafield-Keys basieren auf den echten Shopify-Definitionen.
+ * Siehe METAFIELDS.md fuer das vollstaendige Mapping.
  */
 
 export const GET_COLLECTION_PRODUCTS = `
@@ -35,34 +34,37 @@ export const GET_COLLECTION_PRODUCTS = `
                 }
               }
             }
-            weight: metafield(namespace: "custom", key: "weight") {
+            weight: metafield(namespace: "global", key: "weight_3619") {
               value
             }
-            headShape: metafield(namespace: "custom", key: "head_shape") {
+            headShape: metafield(namespace: "rackets", key: "head-shape_3734") {
               value
             }
-            balanceRaw: metafield(namespace: "custom", key: "balance_mm") {
+            headSize: metafield(namespace: "rackets", key: "head-size_3553") {
               value
             }
-            balance: metafield(namespace: "custom", key: "balance") {
+            balance: metafield(namespace: "rackets", key: "balance_3537") {
               value
             }
-            surfaceMaterial: metafield(namespace: "custom", key: "surface_material") {
+            surfaceMaterial: metafield(namespace: "rackets", key: "structure-surface_3866") {
               value
             }
             surfaceHardness: metafield(namespace: "custom", key: "surface_hardness") {
               value
             }
-            coreMaterial: metafield(namespace: "custom", key: "core_material") {
+            coreMaterial: metafield(namespace: "rackets", key: "core-material_3867") {
               value
             }
             coreHardness: metafield(namespace: "custom", key: "core_hardness") {
               value
             }
-            playType: metafield(namespace: "custom", key: "play_type") {
+            playType: metafield(namespace: "rackets", key: "players-type_3788") {
               value
             }
-            playerLevel: metafield(namespace: "custom", key: "player_level") {
+            playingStyle: metafield(namespace: "rackets", key: "playing-style_3845") {
+              value
+            }
+            playerLevel: metafield(namespace: "rackets", key: "level-of-play_3786") {
               value
             }
           }
@@ -103,34 +105,37 @@ export const GET_ALL_PRODUCTS = `
               }
             }
           }
-          weight: metafield(namespace: "custom", key: "weight") {
+          weight: metafield(namespace: "global", key: "weight_3619") {
             value
           }
-          headShape: metafield(namespace: "custom", key: "head_shape") {
+          headShape: metafield(namespace: "rackets", key: "head-shape_3734") {
             value
           }
-          balanceRaw: metafield(namespace: "custom", key: "balance_mm") {
+          headSize: metafield(namespace: "rackets", key: "head-size_3553") {
             value
           }
-          balance: metafield(namespace: "custom", key: "balance") {
+          balance: metafield(namespace: "rackets", key: "balance_3537") {
             value
           }
-          surfaceMaterial: metafield(namespace: "custom", key: "surface_material") {
+          surfaceMaterial: metafield(namespace: "rackets", key: "structure-surface_3866") {
             value
           }
           surfaceHardness: metafield(namespace: "custom", key: "surface_hardness") {
             value
           }
-          coreMaterial: metafield(namespace: "custom", key: "core_material") {
+          coreMaterial: metafield(namespace: "rackets", key: "core-material_3867") {
             value
           }
           coreHardness: metafield(namespace: "custom", key: "core_hardness") {
             value
           }
-          playType: metafield(namespace: "custom", key: "play_type") {
+          playType: metafield(namespace: "rackets", key: "players-type_3788") {
             value
           }
-          playerLevel: metafield(namespace: "custom", key: "player_level") {
+          playingStyle: metafield(namespace: "rackets", key: "playing-style_3845") {
+            value
+          }
+          playerLevel: metafield(namespace: "rackets", key: "level-of-play_3786") {
             value
           }
         }
