@@ -131,13 +131,36 @@ function parsePlayTypeFromTitle(title: string, vendor: string): PlayType {
 
 // --- Weitere Mapping-Helpers ---
 
+/**
+ * Extrahiert den lesbaren Wert aus einem Shopify-Metafield.
+ * Die PIM schreibt Werte oft als JSON-Array mit Suffix-IDs:
+ *   '["Fortgeschritten_33129"]' → "Fortgeschritten"
+ *   '["Power_33130"]'           → "Power"
+ *   '["EVA Control"]'           → "EVA Control"
+ *   '"272"'                     → "272"
+ */
+function extractMetafieldValue(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Entferne PIM-Suffix wie "_33129"
+      return String(parsed[0]).replace(/_\d+$/, "");
+    }
+    return String(parsed);
+  } catch {
+    // Kein JSON — Rohwert zurueckgeben, Suffix entfernen
+    return raw.replace(/_\d+$/, "");
+  }
+}
+
 function extractId(gid: string): string {
   return gid.split("/").pop() || gid;
 }
 
 function parseHeadShape(value: string | null | undefined): HeadShape {
-  if (!value) return "round";
-  const v = value.toLowerCase();
+  const v = extractMetafieldValue(value)?.toLowerCase();
+  if (!v) return "round";
   if (v.includes("diamond") || v.includes("diamant")) return "diamond";
   if (v.includes("teardrop") || v.includes("tropfen") || v.includes("träne")) return "teardrop";
   if (v.includes("hybrid")) return "hybrid";
@@ -145,20 +168,63 @@ function parseHeadShape(value: string | null | undefined): HeadShape {
   return "round";
 }
 
+/**
+ * Parst Balance aus Metafield.
+ * Kann als Label ("Kopflastig") oder als mm-Wert ("272") kommen.
+ * Balance in mm: < 260 → grip-heavy, 260-275 → balanced, > 275 → head-heavy
+ */
 function parseBalance(value: string | null | undefined): Balance {
-  if (!value) return "balanced";
-  const v = value.toLowerCase();
-  if (v.includes("head") || v.includes("kopf")) return "head-heavy";
-  if (v.includes("grip") || v.includes("griff")) return "grip-heavy";
+  const v = extractMetafieldValue(value);
+  if (!v) return "balanced";
+
+  // Numerisch? → mm-basiertes Mapping
+  const mm = parseInt(v, 10);
+  if (!isNaN(mm) && mm > 0) {
+    if (mm > 275) return "head-heavy";
+    if (mm < 260) return "grip-heavy";
+    return "balanced";
+  }
+
+  const lower = v.toLowerCase();
+  if (lower.includes("head") || lower.includes("kopf")) return "head-heavy";
+  if (lower.includes("grip") || lower.includes("griff")) return "grip-heavy";
   return "balanced";
 }
 
 function parseHardness(value: string | null | undefined): MaterialHardness {
-  if (!value) return "medium";
-  const v = value.toLowerCase();
+  const v = extractMetafieldValue(value)?.toLowerCase();
+  if (!v) return "medium";
   if (v.includes("hard") || v.includes("hart")) return "hard";
   if (v.includes("soft") || v.includes("weich")) return "soft";
   return "medium";
+}
+
+/**
+ * Parst PlayType aus dem PIM-Metafield.
+ * Werte: "Power", "Kontrolle"/"Control", "Allround", "Defensiv"/"Defensive"
+ */
+function parsePlayType(value: string | null | undefined): PlayType | null {
+  const v = extractMetafieldValue(value)?.toLowerCase();
+  if (!v) return null;
+  if (v.includes("power") || v.includes("angriff") || v.includes("attack")) return "power";
+  if (v.includes("control") || v.includes("kontroll")) return "control";
+  if (v.includes("allround") || v.includes("vielseitig")) return "allround";
+  if (v.includes("defen")) return "control"; // Defensiv → control-nahe
+  return null;
+}
+
+/**
+ * Parst PlayerLevel aus dem PIM-Metafield.
+ * Werte: "Einsteiger", "Fortgeschritten", "Turnier", "Profi"
+ */
+function parsePlayerLevel(value: string | null | undefined): PlayerLevel | null {
+  const v = extractMetafieldValue(value)?.toLowerCase();
+  if (!v) return null;
+  if (v.includes("turnier") || v.includes("tournament")) return "tournament";
+  if (v.includes("profi") || v.includes("pro")) return "advanced";
+  if (v.includes("fortgeschritten") || v.includes("intermediate") || v.includes("advanced")) return "intermediate";
+  if (v.includes("einsteiger") || v.includes("beginner") || v.includes("anfänger")) return "recreational";
+  return null;
 }
 
 /**
@@ -219,13 +285,15 @@ function cleanTitle(title: string, vendor: string): string {
 
 function mapShopifyProduct(node: ShopifyProduct): PadelRacket {
   const price = parseFloat(node.priceRange.minVariantPrice.amount);
-  const playType = node.playType?.value
-    ? (node.playType.value as PlayType)
-    : parsePlayTypeFromTitle(node.title, node.vendor);
-  const playerLevel = node.playerLevel?.value
-    ? (node.playerLevel.value as PlayerLevel)
-    : parsePlayerLevelFromTags(node.tags, price);
+
+  const playType = parsePlayType(node.playType?.value)
+    ?? parsePlayTypeFromTitle(node.title, node.vendor);
+  const playerLevel = parsePlayerLevel(node.playerLevel?.value)
+    ?? parsePlayerLevelFromTags(node.tags, price);
   const { matrixX, matrixY } = computeMatrixPosition(playType, playerLevel, node.handle);
+
+  const weightVal = extractMetafieldValue(node.weight?.value);
+  const balanceRaw = extractMetafieldValue(node.balance?.value);
 
   return {
     id: extractId(node.id),
@@ -235,13 +303,13 @@ function mapShopifyProduct(node: ShopifyProduct): PadelRacket {
     price,
     currency: node.priceRange.minVariantPrice.currencyCode,
     imageUrl: node.images.edges[0]?.node.url || "",
-    weight: node.weight ? parseInt(node.weight.value, 10) : 0,
+    weight: weightVal ? parseInt(weightVal, 10) : 0,
     headShape: parseHeadShape(node.headShape?.value),
-    balanceRaw: node.balanceRaw ? parseInt(node.balanceRaw.value, 10) : 0,
+    balanceRaw: balanceRaw ? parseInt(balanceRaw, 10) : 0,
     balance: parseBalance(node.balance?.value),
-    surfaceMaterial: node.surfaceMaterial?.value || "–",
+    surfaceMaterial: extractMetafieldValue(node.surfaceMaterial?.value) || "–",
     surfaceHardness: parseHardness(node.surfaceHardness?.value),
-    coreMaterial: node.coreMaterial?.value || "–",
+    coreMaterial: extractMetafieldValue(node.coreMaterial?.value) || "–",
     coreHardness: parseHardness(node.coreHardness?.value),
     playType,
     playerLevel,
