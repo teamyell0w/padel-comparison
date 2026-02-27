@@ -318,7 +318,71 @@ function mapShopifyProduct(node: ShopifyProduct): PadelRacket {
   };
 }
 
+// --- Cache ---
+
+const CACHE_KEY = "pp_rackets_cache";
+const CACHE_TTL = 30 * 60 * 1000; // 30 Minuten
+
+interface CacheEntry {
+  data: PadelRacket[];
+  timestamp: number;
+}
+
+function getCached(): PadelRacket[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const entry: CacheEntry = JSON.parse(raw);
+    if (Date.now() - entry.timestamp > CACHE_TTL) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    console.log(`[products] Cache hit (${Math.round((Date.now() - entry.timestamp) / 1000)}s alt)`);
+    return entry.data;
+  } catch {
+    return null;
+  }
+}
+
+function setCache(data: PadelRacket[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    const entry: CacheEntry = { data, timestamp: Date.now() };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(entry));
+  } catch {
+    // localStorage voll oder blockiert — ignorieren
+  }
+}
+
 // --- Fetch ---
+
+async function fetchFromShopify(): Promise<PadelRacket[]> {
+  const allProducts: PadelRacket[] = [];
+  let after: string | null = null;
+
+  do {
+    const variables: Record<string, unknown> = {
+      handle: "padelschlaeger",
+      first: 250,
+    };
+    if (after) variables.after = after;
+
+    const data = await shopifyFetch<CollectionResponse>(
+      GET_COLLECTION_PRODUCTS,
+      variables
+    );
+
+    const edges = data.collection.products.edges;
+    allProducts.push(...edges.map((e) => mapShopifyProduct(e.node)));
+
+    after = data.collection.products.pageInfo.hasNextPage
+      ? data.collection.products.pageInfo.endCursor
+      : null;
+  } while (after);
+
+  return allProducts;
+}
 
 export async function getProducts(): Promise<PadelRacket[]> {
   if (!isShopifyConfigured()) {
@@ -326,32 +390,15 @@ export async function getProducts(): Promise<PadelRacket[]> {
     return testProducts;
   }
 
+  // Cache pruefen
+  const cached = getCached();
+  if (cached) return cached;
+
   try {
-    const allProducts: PadelRacket[] = [];
-    let after: string | null = null;
-
-    do {
-      const variables: Record<string, unknown> = {
-        handle: "padelschlaeger",
-        first: 250,
-      };
-      if (after) variables.after = after;
-
-      const data = await shopifyFetch<CollectionResponse>(
-        GET_COLLECTION_PRODUCTS,
-        variables
-      );
-
-      const edges = data.collection.products.edges;
-      allProducts.push(...edges.map((e) => mapShopifyProduct(e.node)));
-
-      after = data.collection.products.pageInfo.hasNextPage
-        ? data.collection.products.pageInfo.endCursor
-        : null;
-    } while (after);
-
-    console.log(`[products] Loaded ${allProducts.length} rackets from Shopify`);
-    return allProducts;
+    const products = await fetchFromShopify();
+    setCache(products);
+    console.log(`[products] Loaded ${products.length} rackets from Shopify (cached for 30min)`);
+    return products;
   } catch (error) {
     console.error("[products] Shopify fetch failed, using test data:", error);
     return testProducts;
