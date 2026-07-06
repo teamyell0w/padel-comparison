@@ -62,3 +62,6 @@
 **Was:** Projekt auf Anfrage wiedergefunden (hiess nicht "Racket-Matrix" sondern `padel-comparison`), Storefront-Token live getestet (funktioniert), Metafield-Befuellung geprueft (9/10 Schlaeger mit 4/5 Feldern), Confluence "APP API credentials" ausgewertet: Dev-Dashboard-Organisation existiert (Org 145468051, Dev-Team Marius Grewe/Marco Loos/Felix). Kein Admin-Login auf der Seite, aber laut Open Brain hat Christoph seit 05/2026 Shop-Admin-Zugriff.
 
 **Offen davon:** Dev-Team um App-Eintrag mit Proxy-Config bitten, wenn Integration ansteht.
+
+## 2026-07-06 (Deploy-Nachtrag)
+**Deploy LIVE:** padel-comparison.vercel.app (production, 23:16, von Christoph per CLI ausgefuehrt). Verifiziert im Browser: "231 Schläger. Einer passt." mit echten Shopify-Daten (Env-Vars lagen seit Februar im Vercel-Projekt). Zwei Stolpersteine dokumentiert: (1) Prod-Build scheiterte an `subsets: ["latin-ext"]` bei Fugaz One (Font hat nur latin) - gefixt. (2) Christophs erster Deploy-Versuch lief ins Leere, weil das Claude-Code-`!`-Praefix im echten Terminal als zsh-Negation wirkt und die &&-Kette stumm abbricht - als Feedback-Memory festgehalten.
