@@ -101,6 +101,32 @@ export function FinderWizard() {
       tile.style.opacity = "1";
       tile.style.filter = "none";
       tile.style.boxShadow = "0 16px 40px rgba(0,0,0,0.18)";
+
+      // Rang-Badge: ploppt auf, sobald die Kachel gelandet ist
+      const badge = document.createElement("span");
+      badge.textContent = String(k + 1);
+      badge.dataset.revealBadge = "1";
+      Object.assign(badge.style, {
+        position: "absolute",
+        top: "2px",
+        left: "2px",
+        width: "13px",
+        height: "13px",
+        borderRadius: "9999px",
+        background: "#0071EA",
+        color: "#ffffff",
+        font: `bold 7px/13px var(--font-fira), 'Fira Sans', sans-serif`,
+        textAlign: "center",
+        transform: "scale(0)",
+        transition: `transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${1.5 + k * 0.12}s`,
+        zIndex: "50",
+      });
+      tile.appendChild(badge);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          badge.style.transform = "scale(1)";
+        })
+      );
     });
 
     return () => {
@@ -113,6 +139,7 @@ export function FinderWizard() {
         tile.style.zIndex = "";
         tile.style.boxShadow = "";
       }
+      container.querySelectorAll("[data-reveal-badge]").forEach((b) => b.remove());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, budget, products]);
