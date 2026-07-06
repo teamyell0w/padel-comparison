@@ -191,17 +191,21 @@ export function FinderWizard() {
         )}
       </div>
 
-      {/* ---------- Die Schlaegerwand rechts ---------- */}
-      <div className="relative h-72 md:h-auto overflow-hidden order-1 md:order-2 bg-pp-gray-50 px-2 pt-2">
+      {/* ---------- Die Schlaegerwand: mobil sticky Band oben, ab md volle Buehne rechts ---------- */}
+      <div
+        className={`relative overflow-hidden order-1 md:order-2 bg-pp-gray-50 px-2 pt-2 md:h-auto md:static ${
+          stage === "intro" ? "h-72" : "h-44 sticky top-0 z-30 shadow-md md:shadow-none"
+        }`}
+      >
         <RacketWall products={products} partial={partial} />
 
         {/* Zaehler-Overlay */}
         {stage !== "intro" && products.length > 0 && (
-          <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 px-6 bg-gradient-to-t from-white via-white/85 to-transparent flex items-end gap-3 pointer-events-none">
-            <span className="font-statement text-5xl md:text-6xl text-pp-blue leading-none tabular-nums">
+          <div className="absolute inset-x-0 bottom-0 pt-10 md:pt-16 pb-3 md:pb-4 px-4 md:px-6 bg-gradient-to-t from-white via-white/85 to-transparent flex items-end gap-2 md:gap-3 pointer-events-none">
+            <span className="font-statement text-4xl md:text-6xl text-pp-blue leading-none tabular-nums">
               {remaining}
             </span>
-            <span className="text-sm text-pp-gray-500 pb-1.5">
+            <span className="text-xs md:text-sm text-pp-gray-500 pb-1">
               von {total} Schlägern passen noch zu dir
             </span>
           </div>
