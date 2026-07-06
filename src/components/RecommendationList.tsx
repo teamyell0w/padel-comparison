@@ -15,9 +15,10 @@ export function RecommendationList({ recommendations }: RecommendationListProps)
         <div
           key={rec.racket.id}
           id={`empfehlung-${i + 1}`}
-          className={`scroll-mt-24 flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-6 p-4 md:p-5 bg-white border transition-shadow hover:shadow-md ${
+          className={`scroll-mt-24 flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-6 p-4 md:p-5 bg-white border transition-shadow hover:shadow-md animate-fade-up ${
             i === 0 ? "border-pp-blue border-2" : "border-pp-gray-200"
           }`}
+          style={{ animationDelay: `${0.9 + i * 0.12}s` }}
         >
           {/* Rang */}
           <span

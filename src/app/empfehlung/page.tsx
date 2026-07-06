@@ -10,6 +10,7 @@ import {
   parseAnswers,
   recommend,
   profilePosition,
+  archetype,
   FINDER_LEVEL_LABELS,
   FINDER_WEIGHT_LABELS,
   FINDER_BUDGET_LABELS,
@@ -89,12 +90,20 @@ function EmpfehlungContent() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 md:py-10">
         {/* Kopf */}
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pp-blue mb-3">
-          Deine Empfehlung
-        </p>
-        <h1 className="text-2xl md:text-4xl font-bold text-pp-charcoal leading-tight mb-4">
-          {recommendations.length} Schläger passen zu deinem Spiel.
-        </h1>
+        <div className="animate-fade-up">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-pp-blue mb-3">
+            Dein Spielerprofil
+          </p>
+          <h1
+            className="font-statement text-4xl md:text-6xl text-pp-dark uppercase leading-[1.05] mb-3"
+           
+          >
+            {archetype(answers)}.
+          </h1>
+          <p className="text-base md:text-lg text-pp-gray-500 mb-5">
+            Diese {recommendations.length} Schläger passen zu deinem Spiel.
+          </p>
+        </div>
 
         {/* Antworten + Anpassen */}
         <div className="flex flex-wrap items-center gap-2 mb-10">

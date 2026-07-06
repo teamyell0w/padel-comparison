@@ -144,6 +144,41 @@ export function recommend(products: PadelRacket[], answers: FinderAnswers, count
   return result;
 }
 
+/**
+ * Wie viele Schlaeger nach den bisherigen Antworten noch in Frage kommen.
+ * Fuer die Live-Verdichtung im Wizard ("348 → 74 → 18 → 5").
+ */
+export function countPool(products: PadelRacket[], partial: Partial<FinderAnswers>): number {
+  return products.filter((r) => {
+    if (!isRecommendable(r)) return false;
+    if (partial.level && LEVEL_SCORES[partial.level][r.playerLevel] < 2) return false;
+    if (partial.style && STYLE_SCORES[partial.style][r.playType] < 3) return false;
+    if (partial.weight && partial.weight !== "egal" && r.weight > 0 && weightScore(partial.weight, r.weight) < 1) return false;
+    const limit = partial.budget ? budgetLimit(partial.budget) : null;
+    if (limit && r.price > limit) return false;
+    return true;
+  }).length;
+}
+
+/**
+ * Spielerprofil-Archetyp aus Spielstil x Level.
+ * Ohne Artikel, damit es in Versalien als Statement funktioniert
+ * und fuer alle Geschlechter traegt.
+ */
+export function archetype(answers: FinderAnswers): string {
+  const base: Record<PlayType, string> = {
+    control: "Stratege",
+    allround: "Alleskönner",
+    power: "Angreifer",
+  };
+  const suffix: Record<FinderLevel, string> = {
+    einsteiger: "auf dem Sprung",
+    fortgeschritten: "mit System",
+    turnier: "mit Matchhunger",
+  };
+  return `${base[answers.style]} ${suffix[answers.level]}`;
+}
+
 /** Position des Nutzerprofils in der Ergebnis-Matrix (0-100) */
 export function profilePosition(answers: FinderAnswers): { x: number; y: number } {
   const x: Record<PlayType, number> = { control: 20, allround: 50, power: 80 };

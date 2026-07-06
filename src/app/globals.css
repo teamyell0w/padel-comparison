@@ -22,6 +22,40 @@
   --font-sans: "Roboto", Arial, Helvetica, sans-serif;
 }
 
+/* Padel-Point Markentypografie (Brandbox: Fugaz One Statements, Fira Sans Body).
+   Als echte Klassen, weil @theme-inline-Variablen zur Laufzeit nicht existieren. */
+.font-statement {
+  font-family: var(--font-fugaz), "Fugaz One", sans-serif;
+}
+.font-body {
+  font-family: var(--font-fira), "Fira Sans", sans-serif;
+}
+
+/* Berater: Reveal-Animationen (Ergebnis-Matrix + Liste) */
+@keyframes dot-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  70% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes ring-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-dot-pop { animation: dot-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-ring-in { animation: ring-in 0.6s ease-out both; }
+.animate-fade-up { animation: fade-up 0.5s ease-out both; }
+
+/* Wizard: Motiv-Crossfade */
+@keyframes motiv-in {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-motiv-in { animation: motiv-in 0.7s ease-out both; }
+
 body {
   background: #ffffff;
   color: var(--color-pp-dark);

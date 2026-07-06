@@ -117,10 +117,10 @@ export function ResultMatrix({ recommendations, profile }: ResultMatrixProps) {
             ))}
           </div>
 
-          {/* Profil-Marker */}
+          {/* Profil-Marker: setzt sich zuletzt */}
           <div
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none"
-            style={{ left: `${profile.x}%`, top: `${profile.y}%` }}
+            className="absolute z-10 pointer-events-none animate-ring-in"
+            style={{ left: `${profile.x}%`, top: `${profile.y}%`, animationDelay: "1.1s" }}
           >
             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-pp-blue/60 bg-pp-blue/5 flex items-center justify-center">
               <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-pp-blue text-center leading-tight">
@@ -134,8 +134,8 @@ export function ResultMatrix({ recommendations, profile }: ResultMatrixProps) {
             <a
               key={rec.racket.id}
               href={`#empfehlung-${i + 1}`}
-              className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group flex flex-col items-center w-24 md:w-28"
-              style={{ left: `${positions[i].x}%`, top: `${positions[i].y}%` }}
+              className="absolute z-20 group flex flex-col items-center w-24 md:w-28 animate-dot-pop"
+              style={{ left: `${positions[i].x}%`, top: `${positions[i].y}%`, animationDelay: `${0.25 + i * 0.15}s` }}
             >
               <div className="relative">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white border-2 border-pp-gray-200 group-hover:border-pp-blue shadow-sm overflow-hidden flex items-center justify-center transition-colors">

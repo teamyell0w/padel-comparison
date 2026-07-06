@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Roboto, Fugaz_One, Fira_Sans } from "next/font/google";
 import { ComparisonProvider } from "@/context/ComparisonContext";
 import { CatalogProvider } from "@/context/CatalogContext";
 import "./globals.css";
@@ -8,6 +8,20 @@ const roboto = Roboto({
   variable: "--font-roboto",
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
+});
+
+// Padel-Point Markentypografie (Quelle: Brandbox):
+// Fugaz One VERSALIEN fuer Statements, Fira Sans fuer Lauftext
+const fugazOne = Fugaz_One({
+  variable: "--font-fugaz",
+  subsets: ["latin", "latin-ext"],
+  weight: "400",
+});
+
+const firaSans = Fira_Sans({
+  variable: "--font-fira",
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -22,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body className={`${roboto.variable} font-sans antialiased`}>
+      <body className={`${roboto.variable} ${fugazOne.variable} ${firaSans.variable} font-sans antialiased`}>
         <CatalogProvider>
           <ComparisonProvider>
             {children}
