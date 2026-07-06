@@ -14,7 +14,7 @@ const roboto = Roboto({
 // Fugaz One VERSALIEN fuer Statements, Fira Sans fuer Lauftext
 const fugazOne = Fugaz_One({
   variable: "--font-fugaz",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   weight: "400",
 });
 
