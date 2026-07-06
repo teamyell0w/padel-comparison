@@ -11,13 +11,33 @@ interface ResultMatrixProps {
  * Schiebt zu nah beieinander liegende Punkte auseinander,
  * damit Bild und Label immer lesbar bleiben.
  */
-function spreadPositions(points: { x: number; y: number }[]): { x: number; y: number }[] {
+function spreadPositions(
+  points: { x: number; y: number }[],
+  fixed: { x: number; y: number }
+): { x: number; y: number }[] {
   const result = points.map((p) => ({ ...p }));
   const MIN_X = 16;
-  const MIN_Y = 20;
+  const MIN_Y = 24;
+  const FIXED_MIN_X = 15;
+  const FIXED_MIN_Y = 17;
 
   for (let iter = 0; iter < 30; iter++) {
     let moved = false;
+
+    // Vom Profil-Marker wegdruecken (der Marker selbst bleibt stehen)
+    for (const p of result) {
+      const dx = p.x - fixed.x;
+      const dy = p.y - fixed.y;
+      if (Math.abs(dx) < FIXED_MIN_X && Math.abs(dy) < FIXED_MIN_Y) {
+        if (Math.abs(dx) / FIXED_MIN_X > Math.abs(dy) / FIXED_MIN_Y) {
+          p.x = fixed.x + FIXED_MIN_X * (dx >= 0 ? 1 : -1);
+        } else {
+          p.y = fixed.y + FIXED_MIN_Y * (dy >= 0 ? 1 : -1);
+        }
+        moved = true;
+      }
+    }
+
     for (let i = 0; i < result.length; i++) {
       for (let j = i + 1; j < result.length; j++) {
         const dx = result[j].x - result[i].x;
@@ -25,8 +45,10 @@ function spreadPositions(points: { x: number; y: number }[]): { x: number; y: nu
         if (Math.abs(dx) < MIN_X && Math.abs(dy) < MIN_Y) {
           const pushX = (MIN_X - Math.abs(dx)) / 2 * (dx >= 0 ? 1 : -1);
           const pushY = (MIN_Y - Math.abs(dy)) / 2 * (dy >= 0 ? 1 : -1);
-          // Entlang der groesseren relativen Luecke schieben
-          if (Math.abs(dx) / MIN_X > Math.abs(dy) / MIN_Y) {
+          // Entlang der groesseren relativen Luecke schieben.
+          // Bei Gleichstand (exakt gestapelte Punkte) horizontal ausweichen,
+          // sonst oszilliert das mit dem Profil-Repel und trennt nie.
+          if (Math.abs(dx) / MIN_X >= Math.abs(dy) / MIN_Y) {
             result[i].x -= pushX;
             result[j].x += pushX;
           } else {
@@ -37,18 +59,23 @@ function spreadPositions(points: { x: number; y: number }[]): { x: number; y: nu
         }
       }
     }
+    // Clamp INNERHALB der Schleife: sonst schiebt der Rand am Ende
+    // zwei bereits getrennte Punkte wieder auf dieselbe Stelle.
+    for (const p of result) {
+      p.x = Math.max(8, Math.min(92, p.x));
+      p.y = Math.max(10, Math.min(90, p.y));
+    }
+
     if (!moved) break;
   }
 
-  return result.map((p) => ({
-    x: Math.max(8, Math.min(92, p.x)),
-    y: Math.max(10, Math.min(90, p.y)),
-  }));
+  return result;
 }
 
 export function ResultMatrix({ recommendations, profile }: ResultMatrixProps) {
   const positions = spreadPositions(
-    recommendations.map((r) => ({ x: r.racket.matrixX, y: r.racket.matrixY }))
+    recommendations.map((r) => ({ x: r.racket.matrixX, y: r.racket.matrixY })),
+    profile
   );
 
   return (
@@ -122,7 +149,7 @@ export function ResultMatrix({ recommendations, profile }: ResultMatrixProps) {
                   {i + 1}
                 </span>
               </div>
-              <span className="mt-1.5 text-[10px] md:text-xs font-medium text-pp-charcoal text-center leading-tight bg-white/85 rounded px-1 max-w-full truncate">
+              <span className="hidden md:block mt-1.5 text-xs font-medium text-pp-charcoal text-center leading-tight bg-white/85 rounded px-1 max-w-full truncate">
                 {rec.racket.title}
               </span>
             </a>

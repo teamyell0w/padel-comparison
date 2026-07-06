@@ -69,8 +69,11 @@ export function ComparisonTable({ rackets, onRemove }: ComparisonTableProps) {
   const coreValues = rackets.map((r) => HARDNESS_LABELS[r.coreHardness]);
   const playTypeValues = rackets.map((r) => PLAY_TYPE_LABELS[r.playType]);
 
-  const surfaceFullValues = rackets.map((r) => `${HARDNESS_LABELS[r.surfaceHardness]} (${r.surfaceMaterial})`);
-  const coreFullValues = rackets.map((r) => `${HARDNESS_LABELS[r.coreHardness]} (${r.coreMaterial})`);
+  const withMaterial = (hardness: string, material: string) =>
+    material && material !== "–" && material !== "-" ? `${hardness} (${material})` : hardness;
+
+  const surfaceFullValues = rackets.map((r) => withMaterial(HARDNESS_LABELS[r.surfaceHardness], r.surfaceMaterial));
+  const coreFullValues = rackets.map((r) => withMaterial(HARDNESS_LABELS[r.coreHardness], r.coreMaterial));
 
   return (
     <div className="w-full overflow-x-auto scrollbar-thin">

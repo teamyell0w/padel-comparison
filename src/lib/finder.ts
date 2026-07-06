@@ -108,12 +108,17 @@ export function recommend(products: PadelRacket[], answers: FinderAnswers, count
   const limit = budgetLimit(answers.budget);
   const pool = products.filter(isRecommendable);
 
+  // Bei Punktgleichheit soll der Preis Richtung Budget zaehlen duerfen:
+  // gleicher Fit + hochwertigeres Material = bessere Empfehlung.
+  const priceAnchor = limit ?? 250;
+
   const scored = pool.map((racket) => ({
     racket,
     score:
       LEVEL_SCORES[answers.level][racket.playerLevel] +
       STYLE_SCORES[answers.style][racket.playType] +
-      weightScore(answers.weight, racket.weight),
+      weightScore(answers.weight, racket.weight) +
+      Math.min(racket.price / priceAnchor, 1) * 0.8,
     reasons: buildReasons(racket, answers),
     overBudget: limit !== null && racket.price > limit,
   }));

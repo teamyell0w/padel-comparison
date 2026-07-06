@@ -15,7 +15,7 @@ export function RecommendationList({ recommendations }: RecommendationListProps)
         <div
           key={rec.racket.id}
           id={`empfehlung-${i + 1}`}
-          className={`scroll-mt-24 flex items-center gap-4 md:gap-6 p-4 md:p-5 bg-white border transition-shadow hover:shadow-md ${
+          className={`scroll-mt-24 flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-6 p-4 md:p-5 bg-white border transition-shadow hover:shadow-md ${
             i === 0 ? "border-pp-blue border-2" : "border-pp-gray-200"
           }`}
         >
@@ -47,14 +47,14 @@ export function RecommendationList({ recommendations }: RecommendationListProps)
             <p className="text-[10px] md:text-[11px] text-pp-gray-400 uppercase tracking-wider">
               {rec.racket.brand}
             </p>
-            <h3 className="text-sm md:text-base font-bold text-pp-charcoal leading-snug truncate">
+            <h3 className="text-sm md:text-base font-bold text-pp-charcoal leading-snug line-clamp-2">
               {rec.racket.title}
             </h3>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {rec.reasons.map((reason) => (
                 <span
                   key={reason}
-                  className="text-[10px] md:text-[11px] font-medium text-pp-gray-600 bg-pp-gray-100 rounded-full px-2 py-0.5"
+                  className="text-[10px] md:text-[11px] font-medium text-pp-gray-600 bg-pp-gray-100 rounded-full px-2 py-0.5 whitespace-nowrap"
                 >
                   ✓ {reason}
                 </span>
@@ -67,16 +67,16 @@ export function RecommendationList({ recommendations }: RecommendationListProps)
             </div>
           </div>
 
-          {/* Preis + CTA */}
-          <div className="shrink-0 text-right">
-            <p className="text-base md:text-lg font-bold text-pp-charcoal mb-2">
+          {/* Preis + CTA: mobil eigene Zeile, ab md rechte Spalte */}
+          <div className="w-full flex items-center justify-between gap-3 md:w-auto md:block md:shrink-0 md:text-right">
+            <p className="text-base md:text-lg font-bold text-pp-charcoal md:mb-2">
               {rec.racket.price.toFixed(2).replace(".", ",")} €
             </p>
             <a
               href={`${SHOP_BASE}/${rec.racket.handle}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-3 md:px-4 py-2 bg-pp-blue text-white text-xs md:text-sm font-semibold hover:bg-pp-blue-light transition-colors whitespace-nowrap"
+              className="inline-block px-4 py-2 bg-pp-blue text-white text-xs md:text-sm font-semibold hover:bg-pp-blue-light transition-colors whitespace-nowrap"
             >
               Im Shop ansehen
             </a>
