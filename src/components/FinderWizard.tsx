@@ -67,10 +67,10 @@ export function FinderWizard() {
             </p>
             <h1 className="font-statement text-5xl md:text-6xl text-pp-dark uppercase leading-[1.05] mb-6">
               {total > 0 ? total : "Alle"} Schläger.<br />
-              <span className="text-pp-blue">Fünf sind deins.</span>
+              <span className="text-pp-blue">Einer passt.</span>
             </h1>
             <p className="text-base md:text-lg text-pp-gray-500 mb-10 max-w-md">
-              Zeig uns, wo du auf dem Court stehst. Der Rest der Wand fällt von allein.
+              Zeig uns dein Spiel. Die Wand erledigt den Rest.
             </p>
             <button
               onClick={() => setStage("position")}
