@@ -1,264 +1,80 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PlayTypeIcon } from "./icons/PlayTypeIcon";
-import { WeightIcon } from "./icons/WeightIcon";
+import { MatrixInput } from "./MatrixInput";
+import { RacketWall } from "./RacketWall";
 import { getProducts } from "@/lib/products";
-import { countPool } from "@/lib/finder";
-import type { FinderAnswers } from "@/lib/finder";
+import { countPool, positionToAnswers, FINDER_LEVEL_LABELS } from "@/lib/finder";
+import type { FinderAnswers, FinderWeight, FinderBudget } from "@/lib/finder";
+import { PLAY_TYPE_LABELS } from "@/lib/types";
 import type { PadelRacket } from "@/lib/types";
 
-interface Option {
-  value: string;
-  label: string;
-  description: string;
-  icon?: React.ReactNode;
-}
+type Stage = "intro" | "position" | "weight" | "budget";
 
-interface Question {
-  key: keyof FinderAnswers;
-  kicker: string;
-  headline: string;
-  motiv: string;
-  options: Option[];
-}
-
-function LevelIcon({ bars, size = 28 }: { bars: 1 | 2 | 3; size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {[0, 1, 2].map((i) => (
-        <rect
-          key={i}
-          x={4 + i * 6}
-          y={18 - (i + 1) * 4.5}
-          width="4"
-          height={(i + 1) * 4.5 + 2}
-          rx="1"
-          fill="currentColor"
-          opacity={i < bars ? 0.8 : 0.15}
-        />
-      ))}
-    </svg>
-  );
-}
-
-const QUESTIONS: Question[] = [
-  {
-    key: "level",
-    kicker: "Dein Spielniveau",
-    headline: "Wie viel Padel steckt in dir?",
-    motiv: "/motive/level.jpg",
-    options: [
-      { value: "einsteiger", label: "Einsteiger", description: "Ich fange gerade an oder spiele gelegentlich", icon: <LevelIcon bars={1} /> },
-      { value: "fortgeschritten", label: "Fortgeschritten", description: "Ich spiele regelmäßig und beherrsche die Grundschläge", icon: <LevelIcon bars={2} /> },
-      { value: "turnier", label: "Turnier", description: "Ich spiele ambitioniert, in Ligen oder Turnieren", icon: <LevelIcon bars={3} /> },
-    ],
-  },
-  {
-    key: "style",
-    kicker: "Dein Spielstil",
-    headline: "Was ist dein Spiel?",
-    motiv: "/motive/stil.jpg",
-    options: [
-      { value: "control", label: "Kontrolle", description: "Präzise Bälle, sichere Platzierung, wenig Fehler", icon: <PlayTypeIcon type="control" /> },
-      { value: "allround", label: "Allround", description: "Von allem etwas, flexibel in jeder Situation", icon: <PlayTypeIcon type="allround" /> },
-      { value: "power", label: "Power", description: "Druck machen, Smashes, den Punkt erzwingen", icon: <PlayTypeIcon type="power" /> },
-    ],
-  },
-  {
-    key: "weight",
-    kicker: "Das Gewicht",
-    headline: "Wie liegt er am besten?",
-    motiv: "/motive/gewicht.jpg",
-    options: [
-      { value: "leicht", label: "Leicht", description: "Bis ca. 355 g, handlich und armschonend", icon: <WeightIcon /> },
-      { value: "mittel", label: "Mittel", description: "Ca. 360-370 g, guter Mix aus Stabilität und Tempo", icon: <WeightIcon /> },
-      { value: "egal", label: "Egal", description: "Ich habe keine Präferenz", icon: <WeightIcon /> },
-    ],
-  },
-  {
-    key: "budget",
-    kicker: "Dein Budget",
-    headline: "Was ist er dir wert?",
-    motiv: "/motive/budget.jpg",
-    options: [
-      { value: "100", label: "Bis 100 €", description: "Solide Qualität zum Einstiegspreis" },
-      { value: "200", label: "Bis 200 €", description: "Gehobene Mittelklasse mit Top-Material" },
-      { value: "offen", label: "Offen", description: "Zeig mir die beste Empfehlung, egal was sie kostet" },
-    ],
-  },
+const WEIGHT_OPTIONS: { value: FinderWeight; label: string; description: string }[] = [
+  { value: "leicht", label: "Leicht", description: "Bis ca. 355 g, handlich und armschonend" },
+  { value: "mittel", label: "Mittel", description: "Ca. 360-370 g, guter Mix aus Stabilität und Tempo" },
+  { value: "egal", label: "Egal", description: "Ich habe keine Präferenz" },
 ];
 
-/** Zahl weich zum Zielwert animieren (Live-Verdichtung) */
-function useAnimatedNumber(target: number): number {
-  const [value, setValue] = useState(target);
-  const raf = useRef<number>(0);
+const BUDGET_OPTIONS: { value: FinderBudget; label: string; description: string }[] = [
+  { value: "100", label: "Bis 100 €", description: "Solide Qualität zum Einstiegspreis" },
+  { value: "200", label: "Bis 200 €", description: "Gehobene Mittelklasse mit Top-Material" },
+  { value: "offen", label: "Offen", description: "Zeig mir die beste Empfehlung, egal was sie kostet" },
+];
 
-  useEffect(() => {
-    const from = value;
-    const diff = target - from;
-    if (diff === 0) return;
-    const start = performance.now();
-    const DURATION = 550;
-
-    const tick = (now: number) => {
-      const t = Math.min((now - start) / DURATION, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setValue(Math.round(from + diff * eased));
-      if (t < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target]);
-
-  return value;
-}
+const STAGES: Stage[] = ["position", "weight", "budget"];
 
 export function FinderWizard() {
   const router = useRouter();
-  const [step, setStep] = useState(-1); // -1 = Intro
-  const [answers, setAnswers] = useState<Partial<FinderAnswers>>({});
+  const [stage, setStage] = useState<Stage>("intro");
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [weight, setWeight] = useState<FinderWeight | null>(null);
   const [products, setProducts] = useState<PadelRacket[]>([]);
 
   useEffect(() => {
     getProducts().then(setProducts).catch(() => {});
   }, []);
 
+  const { style, level } = positionToAnswers(pos.x, pos.y);
+
+  // Was die Wand gerade "weiss": waechst mit jedem Schritt
+  const partial: Partial<FinderAnswers> = useMemo(() => {
+    if (stage === "intro") return {};
+    if (stage === "position" || stage === "weight") return { style, level };
+    return { style, level, ...(weight ? { weight } : {}) };
+  }, [stage, style, level, weight]);
+
   const total = products.length ? countPool(products, {}) : 0;
-  const poolCount = products.length ? countPool(products, answers) : 0;
-  const animatedPool = useAnimatedNumber(products.length ? poolCount : 0);
+  const remaining = products.length ? countPool(products, partial) : 0;
+  const stepIndex = STAGES.indexOf(stage as (typeof STAGES)[number]);
 
-  const question = step >= 0 ? QUESTIONS[step] : null;
-  const motiv = question ? question.motiv : "/motive/intro.jpg";
-
-  const handleSelect = (value: string) => {
-    const next = { ...answers, [QUESTIONS[step].key]: value };
-    setAnswers(next);
-
-    if (step < QUESTIONS.length - 1) {
-      setStep(step + 1);
-    } else {
-      const params = new URLSearchParams(next as Record<string, string>);
-      router.push(`/empfehlung?${params.toString()}`);
-    }
-  };
-
-  const goBack = () => {
-    // Antwort des vorigen Schritts verwerfen, damit der Zaehler wieder hochgeht
-    const prevKey = step > 0 ? QUESTIONS[step - 1].key : null;
-    if (prevKey) {
-      const next = { ...answers };
-      delete next[prevKey];
-      setAnswers(next);
-    }
-    setStep(step - 1);
+  const finish = (budget: FinderBudget) => {
+    const params = new URLSearchParams({ level, style, weight: weight ?? "egal", budget });
+    router.push(`/empfehlung?${params.toString()}`);
   };
 
   return (
-    <div className="grid md:grid-cols-[11fr_9fr] md:min-h-[calc(100vh-110px)]">
-      {/* ---------- Content links ---------- */}
-      <div className="flex flex-col px-5 md:px-12 lg:px-16 py-8 md:py-12 order-2 md:order-1">
-        {question ? (
-          <>
-            {/* Fortschritt */}
-            <div className="flex items-center gap-3 mb-10 md:mb-14">
-              <button
-                onClick={goBack}
-                className="text-sm text-pp-gray-400 hover:text-pp-charcoal transition-colors shrink-0"
-              >
-                ← Zurück
-              </button>
-              <div className="flex-1 h-1 bg-pp-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-pp-blue rounded-full transition-all duration-300"
-                  style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }}
-                />
-              </div>
-              <span className="text-xs text-pp-gray-400 shrink-0 tabular-nums">
-                {step + 1} / {QUESTIONS.length}
-              </span>
-            </div>
-
-            <div key={step} className="animate-fade-up">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-pp-blue mb-3">
-                {question.kicker}
-              </p>
-              <h2
-                className="font-statement text-4xl md:text-5xl lg:text-6xl text-pp-dark uppercase leading-[1.05] mb-10"
-               
-              >
-                {question.headline}
-              </h2>
-
-              <div className="grid gap-3">
-                {QUESTIONS[step].options.map((option) => {
-                  const selected = answers[question.key] === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      onClick={() => handleSelect(option.value)}
-                      className={`group flex items-center gap-4 text-left px-5 py-4 border-2 transition-all hover:border-pp-blue hover:-translate-y-0.5 hover:shadow-md ${
-                        selected ? "border-pp-blue bg-pp-blue/5" : "border-pp-gray-200 bg-white"
-                      }`}
-                    >
-                      {option.icon && (
-                        <span className={`shrink-0 ${selected ? "text-pp-blue" : "text-pp-gray-400 group-hover:text-pp-blue"} transition-colors`}>
-                          {option.icon}
-                        </span>
-                      )}
-                      <span className="flex-1">
-                        <span className="block text-base md:text-lg font-bold text-pp-charcoal">
-                          {option.label}
-                        </span>
-                        <span className="block text-sm text-pp-gray-500 leading-snug">
-                          {option.description}
-                        </span>
-                      </span>
-                      <span className="shrink-0 text-pp-gray-300 group-hover:text-pp-blue group-hover:translate-x-1 transition-all">→</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Live-Verdichtung */}
-            <div className="mt-auto pt-10">
-              <p className="text-sm text-pp-gray-500">
-                {products.length > 0 && (
-                  <>
-                    Noch{" "}
-                    <span className="inline-block min-w-[2.2em] text-center font-bold text-pp-blue text-lg tabular-nums">
-                      {animatedPool}
-                    </span>{" "}
-                    von {total} Schlägern im Rennen.
-                  </>
-                )}
-              </p>
-            </div>
-          </>
-        ) : (
-          /* ---------- Intro ---------- */
-          <div className="my-auto max-w-xl animate-fade-up">
+    <div className="grid md:grid-cols-[2fr_3fr] md:h-[calc(100vh-110px)]">
+      {/* ---------- Interaktion links ---------- */}
+      <div className="flex flex-col px-5 md:px-10 lg:px-14 py-8 md:py-10 order-2 md:order-1 md:overflow-y-auto">
+        {stage === "intro" ? (
+          <div className="my-auto animate-fade-up">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-pp-blue mb-4">
               Schlägerberater
             </p>
-            <h1
-              className="font-statement text-5xl md:text-6xl lg:text-7xl text-pp-dark uppercase leading-[1.05] mb-6"
-             
-            >
-              Finde deinen Schläger.
+            <h1 className="font-statement text-5xl md:text-6xl text-pp-dark uppercase leading-[1.05] mb-6">
+              {total > 0 ? total : "Alle"} Schläger.<br />
+              <span className="text-pp-blue">Fünf sind deins.</span>
             </h1>
             <p className="text-base md:text-lg text-pp-gray-500 mb-10 max-w-md">
-              {total > 0 ? `${total} Schläger im Shop. Fünf davon passen zu deinem Spiel.` : "Fünf Schläger passen zu deinem Spiel."}{" "}
-              Vier Fragen, dann kennst du sie.
+              Zeig uns, wo du auf dem Court stehst. Der Rest der Wand fällt von allein.
             </p>
             <button
-              onClick={() => setStep(0)}
+              onClick={() => setStage("position")}
               className="px-10 py-4 bg-pp-blue text-white text-base font-bold hover:bg-pp-blue-light transition-colors"
-             
             >
               Los geht&apos;s
             </button>
@@ -268,18 +84,128 @@ export function FinderWizard() {
               </Link>
             </div>
           </div>
+        ) : (
+          <>
+            {/* Fortschritt */}
+            <div className="flex items-center gap-3 mb-8">
+              <button
+                onClick={() => {
+                  const prev = stepIndex <= 0 ? "intro" : STAGES[stepIndex - 1];
+                  if (prev === "position" || prev === "intro") setWeight(null);
+                  setStage(prev);
+                }}
+                className="text-sm text-pp-gray-400 hover:text-pp-charcoal transition-colors shrink-0"
+              >
+                ← Zurück
+              </button>
+              <div className="flex-1 h-1 bg-pp-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-pp-blue rounded-full transition-all duration-300"
+                  style={{ width: `${((stepIndex + 1) / STAGES.length) * 100}%` }}
+                />
+              </div>
+              <span className="text-xs text-pp-gray-400 shrink-0 tabular-nums">
+                {stepIndex + 1} / {STAGES.length}
+              </span>
+            </div>
+
+            {stage === "position" && (
+              <div key="position" className="animate-fade-up">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-pp-blue mb-3">
+                  Dein Spiel
+                </p>
+                <h2 className="font-statement text-4xl md:text-5xl text-pp-dark uppercase leading-[1.05] mb-6">
+                  Wo stehst du?
+                </h2>
+
+                <MatrixInput x={pos.x} y={pos.y} onChange={(x, y) => setPos({ x, y })} />
+
+                <p className="font-statement text-lg md:text-xl text-pp-charcoal uppercase mt-5 mb-6 text-center">
+                  {PLAY_TYPE_LABELS[style]} <span className="text-pp-gray-300">×</span> {FINDER_LEVEL_LABELS[level]}
+                </p>
+
+                <button
+                  onClick={() => setStage("weight")}
+                  className="w-full px-8 py-3.5 bg-pp-blue text-white text-sm font-bold hover:bg-pp-blue-light transition-colors"
+                >
+                  Das bin ich →
+                </button>
+              </div>
+            )}
+
+            {stage === "weight" && (
+              <div key="weight" className="animate-fade-up my-auto">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-pp-blue mb-3">
+                  Das Gewicht
+                </p>
+                <h2 className="font-statement text-4xl md:text-5xl text-pp-dark uppercase leading-[1.05] mb-8">
+                  Wie liegt er am besten?
+                </h2>
+                <div className="grid gap-3">
+                  {WEIGHT_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setWeight(option.value);
+                        setStage("budget");
+                      }}
+                      className="group flex items-center gap-4 text-left px-5 py-4 border-2 border-pp-gray-200 bg-white transition-all hover:border-pp-blue hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <span className="flex-1">
+                        <span className="block text-base md:text-lg font-bold text-pp-charcoal">{option.label}</span>
+                        <span className="block text-sm text-pp-gray-500 leading-snug">{option.description}</span>
+                      </span>
+                      <span className="shrink-0 text-pp-gray-300 group-hover:text-pp-blue group-hover:translate-x-1 transition-all">→</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {stage === "budget" && (
+              <div key="budget" className="animate-fade-up my-auto">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-pp-blue mb-3">
+                  Dein Budget
+                </p>
+                <h2 className="font-statement text-4xl md:text-5xl text-pp-dark uppercase leading-[1.05] mb-8">
+                  Was ist er dir wert?
+                </h2>
+                <div className="grid gap-3">
+                  {BUDGET_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => finish(option.value)}
+                      className="group flex items-center gap-4 text-left px-5 py-4 border-2 border-pp-gray-200 bg-white transition-all hover:border-pp-blue hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <span className="flex-1">
+                        <span className="block text-base md:text-lg font-bold text-pp-charcoal">{option.label}</span>
+                        <span className="block text-sm text-pp-gray-500 leading-snug">{option.description}</span>
+                      </span>
+                      <span className="shrink-0 text-pp-gray-300 group-hover:text-pp-blue group-hover:translate-x-1 transition-all">→</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* ---------- Motiv rechts ---------- */}
-      <div className="relative h-52 md:h-auto overflow-hidden order-1 md:order-2 bg-pp-gray-100">
-        <img
-          key={motiv}
-          src={motiv}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover animate-motiv-in"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+      {/* ---------- Die Schlaegerwand rechts ---------- */}
+      <div className="relative h-72 md:h-auto overflow-hidden order-1 md:order-2 bg-pp-gray-50 px-2 pt-2">
+        <RacketWall products={products} partial={partial} />
+
+        {/* Zaehler-Overlay */}
+        {stage !== "intro" && products.length > 0 && (
+          <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 px-6 bg-gradient-to-t from-white via-white/85 to-transparent flex items-end gap-3 pointer-events-none">
+            <span className="font-statement text-5xl md:text-6xl text-pp-blue leading-none tabular-nums">
+              {remaining}
+            </span>
+            <span className="text-sm text-pp-gray-500 pb-1.5">
+              von {total} Schlägern passen noch zu dir
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

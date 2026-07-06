@@ -69,11 +69,13 @@ function budgetLimit(budget: FinderBudget): number | null {
   return null;
 }
 
-/** Test- und Junior-Schlaeger gehoeren nicht in eine Kauf-Empfehlung */
+/** Test-/Junior-Schlaeger und Zubehoer gehoeren nicht in eine Kauf-Empfehlung */
 function isRecommendable(r: PadelRacket): boolean {
   const t = r.title.toLowerCase();
   if (t.includes("testschläger") || t.includes("test racket")) return false;
   if (/\b(junior|jr\.?|kids)\b/.test(t)) return false;
+  // Zubehoer, das die Produktabfrage wegen "Schläger..." im Titel mitfaengt
+  if (/tasche|bag|hülle|cover|schutz|grip|dämpfer/.test(t)) return false;
   if (!r.imageUrl) return false;
   return true;
 }
@@ -144,20 +146,30 @@ export function recommend(products: PadelRacket[], answers: FinderAnswers, count
   return result;
 }
 
+/** Passt ein einzelner Schlaeger zu den bisherigen Antworten? (Live-Wand) */
+export function matchesPartial(r: PadelRacket, partial: Partial<FinderAnswers>): boolean {
+  if (!isRecommendable(r)) return false;
+  if (partial.level && LEVEL_SCORES[partial.level][r.playerLevel] < 2) return false;
+  if (partial.style && STYLE_SCORES[partial.style][r.playType] < 3) return false;
+  if (partial.weight && partial.weight !== "egal" && r.weight > 0 && weightScore(partial.weight, r.weight) < 1) return false;
+  const limit = partial.budget ? budgetLimit(partial.budget) : null;
+  if (limit && r.price > limit) return false;
+  return true;
+}
+
 /**
  * Wie viele Schlaeger nach den bisherigen Antworten noch in Frage kommen.
  * Fuer die Live-Verdichtung im Wizard ("348 → 74 → 18 → 5").
  */
 export function countPool(products: PadelRacket[], partial: Partial<FinderAnswers>): number {
-  return products.filter((r) => {
-    if (!isRecommendable(r)) return false;
-    if (partial.level && LEVEL_SCORES[partial.level][r.playerLevel] < 2) return false;
-    if (partial.style && STYLE_SCORES[partial.style][r.playType] < 3) return false;
-    if (partial.weight && partial.weight !== "egal" && r.weight > 0 && weightScore(partial.weight, r.weight) < 1) return false;
-    const limit = partial.budget ? budgetLimit(partial.budget) : null;
-    if (limit && r.price > limit) return false;
-    return true;
-  }).length;
+  return products.filter((r) => matchesPartial(r, partial)).length;
+}
+
+/** Drag-Position auf der Matrix (0-100) → Antwort-Kategorien */
+export function positionToAnswers(x: number, y: number): { style: PlayType; level: FinderLevel } {
+  const style: PlayType = x < 33.4 ? "control" : x < 66.7 ? "allround" : "power";
+  const level: FinderLevel = y < 33.4 ? "turnier" : y < 66.7 ? "fortgeschritten" : "einsteiger";
+  return { style, level };
 }
 
 /**
