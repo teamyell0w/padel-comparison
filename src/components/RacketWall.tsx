@@ -26,6 +26,7 @@ function WallTile({ racket, active }: { racket: PadelRacket; active: boolean }) 
 
   return (
     <div
+      data-racket-id={racket.id}
       className={`relative aspect-[3/4] rounded-sm overflow-hidden transition-all duration-500 ${
         loaded ? "bg-white" : "bg-pp-gray-100"
       } ${active ? "opacity-100" : "opacity-[0.13] grayscale"}`}
