@@ -65,9 +65,9 @@ export function Header({ backLink }: HeaderProps) {
               </Link>
             )
           )}
-          {pathname !== "/" && !backLink && (
+          {pathname !== "/katalog" && !backLink && (
             <Link
-              href="/"
+              href="/katalog"
               className="text-sm text-pp-gray-500 hover:text-pp-charcoal transition-colors"
             >
               ← Katalog

@@ -38,13 +38,13 @@ function CompareContent() {
   if (rackets.length < 2) {
     return (
       <div className="min-h-screen bg-white">
-        <Header backLink={{ onClick: () => router.back(), label: "Zurück zur Matrix" }} />
+        <Header backLink={{ onClick: () => router.back(), label: "Zurück" }} />
         <div className="flex flex-col items-center justify-center p-16">
           <p className="text-pp-gray-500 mb-4">
             Bitte wähle mindestens 2 Schläger zum Vergleichen aus.
           </p>
           <Link
-            href="/"
+            href="/katalog"
             className="px-5 py-2 bg-pp-blue text-white font-semibold hover:bg-pp-blue-light transition-colors"
           >
             Zum Katalog
@@ -65,7 +65,7 @@ function CompareContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header backLink={{ onClick: () => router.back(), label: "Zurück zur Matrix" }} />
+      <Header backLink={{ onClick: () => router.back(), label: "Zurück" }} />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-xl font-bold text-pp-charcoal mb-1">
@@ -82,9 +82,9 @@ function CompareContent() {
         <div className="mt-6 text-center">
           <button
             onClick={() => router.back()}
-            className="inline-block px-6 py-2.5 bg-pp-blue text-white font-semibold hover:bg-pp-blue-light transition-colors"
+            className="inline-block px-6 py-2.5 border border-pp-gray-300 text-pp-charcoal font-semibold hover:border-pp-charcoal transition-colors"
           >
-            Zurück zur Matrix
+            ← Zurück zur Auswahl
           </button>
         </div>
       </main>

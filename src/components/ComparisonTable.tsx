@@ -120,6 +120,16 @@ export function ComparisonTable({ rackets, onRemove }: ComparisonTableProps) {
               <span className="text-lg font-bold text-pp-charcoal mt-1">
                 {racket.price.toFixed(2).replace(".", ",")} €
               </span>
+
+              {/* Shop-CTA */}
+              <a
+                href={`https://www.padel-point.de/products/${racket.handle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 px-4 py-1.5 bg-pp-blue text-white text-xs font-semibold hover:bg-pp-blue-light transition-colors whitespace-nowrap"
+              >
+                Im Shop ansehen
+              </a>
             </div>
           ))}
         </div>
